@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e88e5;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --error-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .tools-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tools-filter {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #eee;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .tool-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        .tool-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tool-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .launch-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .launch-btn:hover {
+            background: #1565c0;
+        }
+
+        .settings-btn {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .settings-btn:hover {
+            background: #e9ecef;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--error-color); }
+    </style>
+</head>
+<body>
+    <div class="tools-container">
+        <div class="header">
+            <h1>Development Tools</h1>
+        </div>
+
+        <div class="tools-filter">
+            <button class="filter-btn active" data-category="all">All Tools</button>
+            <button class="filter-btn" data-category="development">Development</button>
+            <button class="filter-btn" data-category="design">Design</button>
+            <button class="filter-btn" data-category="testing">Testing</button>
+            <button class="filter-btn" data-category="deployment">Deployment</button>
+        </div>
+
+        <div class="tools-grid" id="toolsGrid">
+            <!-- Tools will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const tools = [
+            {
+                id: 'code-editor',
+                title: 'Code Editor',
+                icon: 'code',
+                iconColor: '#3498db',
+                description: 'Advanced code editor with syntax highlighting and live preview',
+                category: 'development',
+                path: 'editor.html'
+            },
+            {
+                id: 'color-picker',
+                title: 'Color Palette',
+                icon: 'palette',
+                iconColor: '#e74c3c',
+                description: 'Create and manage color schemes for your projects',
+                category: 'design',
+                path: 'color-picker.html'
+            },
+            {
+                id: 'image-optimizer',
+                title: 'Image Optimizer',
+                icon: 'image',
+                iconColor: '#2ecc71',
+                description: 'Optimize and compress images for better performance',
+                category: 'deployment',
+                path: 'image-optimizer.html'
+            },
+            {
+                id: 'code-validator',
+                title: 'Code Validator',
+                icon: 'check-circle',
+                iconColor: '#f1c40f',
+                description: 'Validate HTML, CSS, and JavaScript code',
+                category: 'testing',
+                path: 'validator.html'
+            }
+        ];
+
+        function renderTools(category = 'all') {
+            const toolsGrid = document.getElementById('toolsGrid');
+            const filteredTools = category === 'all' 
+                ? tools 
+                : tools.filter(tool => tool.category === category);
+
+            toolsGrid.innerHTML = filteredTools.map(tool => `
+                <div class="tool-card" data-category="${tool.category}">
+                    <div class="tool-header">
+                        <div class="tool-icon" style="background: ${tool.iconColor}">
+                            <i class="fas fa-${tool.icon}"></i>
+                        </div>
+                        <h3 class="tool-title">${tool.title}</h3>
+                    </div>
+                    <p class="tool-description">${tool.description}</p>
+                    <div class="tool-actions">
+                        <button class="tool-btn launch-btn" onclick="launchTool('${tool.id}')">
+                            <i class="fas fa-play"></i> Launch
+                        </button>
+                        <button class="tool-btn settings-btn" onclick="openSettings('${tool.id}')">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function launchTool(toolId) {
+            const tool = tools.find(t => t.id === toolId);
+            if (tool) {
+                window.open(tool.path, '_blank');
+            }
+        }
+
+        function openSettings(toolId) {
+            const settings = JSON.parse(localStorage.getItem('toolSettings') || '{}');
+            // Handle tool settings
+            showNotification(`Settings opened for ${toolId}`, 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTools();
+
+            // Add filter functionality
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderTools(btn.dataset.category);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

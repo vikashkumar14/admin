@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #2c3e50;
+            --premium-color: #ffd700;
+            --free-color: #2ecc71;
+            --error-color: #e74c3c;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chapter-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chapter-card.premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-style: solid;
+            border-width: 0 50px 50px 0;
+            border-color: transparent var(--premium-color) transparent transparent;
+        }
+
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chapter-title {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .access-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .premium-badge {
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            color: #000;
+        }
+
+        .free-badge {
+            background: var(--free-color);
+            color: white;
+        }
+
+        .chapter-content {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .chapter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-premium {
+            background: linear-gradient(45deg, #ffd700, #ffa500);
+            color: #000;
+        }
+
+        .btn-free {
+            background: var(--free-color);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .access-toggle {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .resource-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .resource-list {
+            margin: 10px 0;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .resource-item i {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .resource-item a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .resource-item a:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="../chapter.html" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to User Panel
+                </a>
+                <h1>Chapter Management</h1>
+            </div>
+            <button class="btn btn-primary" onclick="showAddChapterModal()">
+                <i class="fas fa-plus"></i> Add Chapter
+            </button>
+        </div>
+
+        <div class="chapter-grid" id="chapterGrid">
+            <!-- Chapters will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Chapter Modal -->
+    <div id="chapterModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Chapter</h2>
+            <form id="chapterForm" onsubmit="handleChapterSubmit(event)">
+                <div class="form-group">
+                    <label>Chapter Title</label>
+                    <input type="text" id="chapterTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="chapterDescription" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Resource URL (Optional)</label>
+                    <input type="url" id="chapterUrl" class="form-control" placeholder="https://example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>PDF Document (Optional)</label>
+                    <input type="file" id="chapterPdf" class="form-control" accept="application/pdf">
+                </div>
+
+                <div id="pdfPreview" class="resource-section" style="display: none;">
+                    <h4>Attached PDF:</h4>
+                    <div class="resource-list"></div>
+                </div>
+                <div class="access-toggle">
+                    <label class="toggle-label">
+                        <input type="radio" name="access" value="free" checked>
+                        <span class="access-badge free-badge">Free</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="radio" name="access" value="premium">
+                        <span class="access-badge premium-badge">Premium</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Chapter</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Set admin status when loading admin panel
+        sessionStorage.setItem('isAdmin', 'true');
+
+        function checkAdmin() {
+            const isAdmin = sessionStorage.getItem('isAdmin');
+            if (isAdmin !== 'true') {
+                window.location.href = '../chapter.html';
+            }
+        }
+
+        // Call this when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdmin();
+            loadChapters();
+        });
+
+        // Initialize chapters if not exists
+        if (!localStorage.getItem('chapters')) {
+            const defaultChapters = [
+                {
+                    id: 1,
+                    title: 'Introduction to Web Design',
+                    description: 'Basic concepts and principles',
+                    isPremium: false,
+                    url: 'https://example.com/webdesign',
+                    pdf: null
+                },
+                {
+                    id: 2,
+                    title: 'Advanced CSS Techniques',
+                    description: 'Advanced styling and animations',
+                    isPremium: true,
+                    url: 'https://example.com/css',
+                    pdf: null
+                }
+            ];
+            localStorage.setItem('chapters', JSON.stringify(defaultChapters));
+        }
+
+        function loadChapters() {
+            const chapters = JSON.parse(localStorage.getItem('chapters') || '[]');
+            const grid = document.getElementById('chapterGrid');
+            
+            if (chapters.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; padding: 20px;">No chapters available. Add your first chapter!</p>';
+                return;
+            }
+
+            grid.innerHTML = chapters.map(chapter => `
+                <div class="chapter-card ${chapter.isPremium ? 'premium' : ''}">
+                    <div class="chapter-header">
+                        <h3 class="chapter-title">${chapter.title}</h3>
+                        <span class="access-badge ${chapter.isPremium ? 'premium-badge' : 'free-badge'}">
+                            ${chapter.isPremium ? 'Premium' : 'Free'}
+                        </span>
+                    </div>
+                    <div class="chapter-content">
+                        ${chapter.description}
+                    </div>
+                    ${chapter.url || chapter.pdf ? `
+                        <div class="resource-section">
+                            <h4>Resources:</h4>
+                            <div class="resource-list">
+                                ${chapter.url ? `
+                                    <div class="resource-item">
+                                        <i class="fas fa-link"></i>
+                                        <a href="${chapter.url}" target="_blank">External Resource</a>
+                                    </div>
+                                ` : ''}
+                                ${chapter.pdf ? `
+                                    <div class="resource-item">
+                                        <i class="fas fa-file-pdf"></i>
+                                        <a href="#" onclick="viewPdf('${chapter.id}')">View PDF</a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="chapter-actions">
+                        <button class="btn ${chapter.isPremium ? 'btn-premium' : 'btn-free'}" 
+                                onclick="editChapter(${chapter.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-primary" onclick="deleteChapter(${chapter.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddChapterModal() {
+            document.getElementById('modalTitle').textContent = 'Add Chapter';
+            document.getElementById('chapterForm').reset();
+            document.getElementById('chapterModal').style.display = 'block';
+        }
+
+        async function handleChapterSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const chapters = JSON.parse(localStorage.getItem('chapters') || '[]');
+            
+            // Handle PDF file
+            const pdfFile = document.getElementById('chapterPdf').files[0];
+            let pdfData = null;
+            
+            if (pdfFile) {
+                try {
+                    pdfData = await readFileAsDataURL(pdfFile);
+                } catch (error) {
+                    console.error('Error reading PDF:', error);
+                    alert('Error processing PDF file');
+                    return;
+                }
+            }
+            
+            const newChapter = {
+                id: Date.now(),
+                title: document.getElementById('chapterTitle').value,
+                description: document.getElementById('chapterDescription').value,
+                isPremium: form.access.value === 'premium',
+                url: document.getElementById('chapterUrl').value || null,
+                pdf: pdfData
+            };
+            
+            chapters.push(newChapter);
+            localStorage.setItem('chapters', JSON.stringify(chapters));
+            
+            document.getElementById('chapterModal').style.display = 'none';
+            loadChapters();
+        }
+
+        function editChapter(id) {
+            const chapters = JSON.parse(localStorage.getItem('chapters') || '[]');
+            const chapter = chapters.find(c => c.id === id);
+            
+            if (chapter) {
+                document.getElementById('modalTitle').textContent = 'Edit Chapter';
+                document.getElementById('chapterTitle').value = chapter.title;
+                document.getElementById('chapterDescription').value = chapter.description;
+                document.querySelector(`input[name="access"][value="${chapter.isPremium ? 'premium' : 'free'}"]`).checked = true;
+                
+                const form = document.getElementById('chapterForm');
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+                    chapter.title = document.getElementById('chapterTitle').value;
+                    chapter.description = document.getElementById('chapterDescription').value;
+                    chapter.isPremium = form.access.value === 'premium';
+                    chapter.url = document.getElementById('chapterUrl').value || null;
+                    
+                    // Handle PDF file
+                    const pdfFile = document.getElementById('chapterPdf').files[0];
+                    if (pdfFile) {
+                        try {
+                            chapter.pdf = await readFileAsDataURL(pdfFile);
+                        } catch (error) {
+                            console.error('Error reading PDF:', error);
+                            alert('Error processing PDF file');
+                            return;
+                        }
+                    } else {
+                        chapter.pdf = null;
+                    }
+                    
+                    localStorage.setItem('chapters', JSON.stringify(chapters));
+                    document.getElementById('chapterModal').style.display = 'none';
+                    loadChapters();
+                };
+                
+                document.getElementById('chapterModal').style.display = 'block';
+            }
+        }
+
+        function deleteChapter(id) {
+            if (confirm('Are you sure you want to delete this chapter?')) {
+                const chapters = JSON.parse(localStorage.getItem('chapters') || '[]');
+                const updatedChapters = chapters.filter(c => c.id !== id);
+                localStorage.setItem('chapters', JSON.stringify(updatedChapters));
+                loadChapters();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        };
+
+        // Add helper functions
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function viewPdf(chapterId) {
+            const chapters = JSON.parse(localStorage.getItem('chapters') || '[]');
+            const chapter = chapters.find(c => c.id === parseInt(chapterId));
+            
+            if (chapter && chapter.pdf) {
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <iframe src="${chapter.pdf}" width="100%" height="100%" style="border: none;"></iframe>
+                `);
+            }
+        }
+
+        // Add PDF preview functionality
+        document.getElementById('chapterPdf').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('pdfPreview');
+            
+            if (file) {
+                const previewList = preview.querySelector('.resource-list');
+                previewList.innerHTML = `
+                    <div class="resource-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                    </div>
+                `;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Load chapters on page load
+        document.addEventListener('DOMContentLoaded', loadChapters);
+    </script>
+</body>
+</html>

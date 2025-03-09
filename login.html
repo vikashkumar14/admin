@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --error-color: #ea4335;
+            --success-color: #34a853;
+            --dark-color: #202124;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.5s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: var(--dark-color);
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .login-header p {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding-left: 40px;
+            background: #f8f9fa;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+            outline: none;
+            background: white;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 12px;
+            top: 38px;
+            color: #666;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Add loading animation */
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success animation */
+        @keyframes success {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .login-success {
+            display: none;
+            text-align: center;
+            color: var(--success-color);
+            animation: success 0.5s ease forwards;
+        }
+
+        /* Shake animation for error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Admin Login</h1>
+            <p>Please enter your credentials to continue</p>
+        </div>
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <i class="fas fa-user"></i>
+                <input type="text" 
+                       id="username" 
+                       class="form-control" 
+                       required 
+                       autocomplete="username"
+                       pattern="[a-zA-Z0-9]{4,}"
+                       title="Username must be at least 4 characters long and contain only letters and numbers">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" 
+                       id="password" 
+                       class="form-control" 
+                       required
+                       autocomplete="current-password"
+                       pattern=".{6,}"
+                       title="Password must be at least 6 characters long">
+                <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+            </div>
+            <button type="submit" class="login-btn">
+                <span class="loader"></span>
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+            <div id="errorMessage" class="error-message"></div>
+            <div class="login-success">
+                <i class="fas fa-check-circle"></i>
+                <span>Login successful! Redirecting to Admin Panel...</span>
+            </div>
+        </form>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+    // Secure hash function (for demo purposes)
+    async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hash))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+    }
+
+    // Admin credentials - in production, use secure storage
+    const ADMIN_CREDENTIALS = {
+        username: 'admin',
+        // This is a hashed version of 'admin123'
+        passwordHash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
+    };
+
+    // Toggle password visibility
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggle = document.querySelector('.password-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggle.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggle.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Enhanced login handler
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const submitBtn = form.querySelector('.login-btn');
+        const loader = form.querySelector('.loader');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.querySelector('.login-success');
+        
+        // Disable form and show loading
+        submitBtn.disabled = true;
+        loader.style.display = 'inline-block';
+        errorMessage.style.display = 'none';
+        
+        try {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Add artificial delay for security
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Hash password and compare
+            const hashedPassword = await hashPassword(password);
+            
+            if (username === ADMIN_CREDENTIALS.username && 
+                hashedPassword === ADMIN_CREDENTIALS.passwordHash) {
+                
+                // Store authentication with expiry
+                const expiryTime = Date.now() + (2 * 60 * 60 * 1000); // 2 hours
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('authExpiry', expiryTime.toString());
+                sessionStorage.setItem('adminUsername', username);
+                
+                // Redirect after animation
+                setTimeout(() => {
+                    window.location.href = 'admin.html';  // Updated path
+                }, 1500);
+                
+            } else {
+                throw new Error('Invalid credentials');
+            }
+            
+        } catch (error) {
+            errorMessage.textContent = 'Invalid username or password';
+            errorMessage.style.display = 'block';
+            form.classList.add('shake');
+            
+            // Remove shake animation after it completes
+            setTimeout(() => form.classList.remove('shake'), 500);
+            
+            // Clear password field
+            document.getElementById('password').value = '';
+        } finally {
+            // Reset button state
+            submitBtn.disabled = false;
+            loader.style.display = 'none';
+        }
+        
+        return false;
+    }
+
+    // Check for session expiry
+    function checkSession() {
+        const expiry = sessionStorage.getItem('authExpiry');
+        if (expiry && parseInt(expiry) < Date.now()) {
+            sessionStorage.clear();
+        }
+    }
+
+    // Initialize
+    window.onload = function() {
+        checkSession();
+        document.getElementById('username').focus();
+    };
+
+    // Prevent form resubmission on refresh
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+</script>
+</body>
+</html>

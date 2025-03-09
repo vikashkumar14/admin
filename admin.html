@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Web Design Book</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --text-color: #2b2d42;
+            --bg-color: #f8f9fa;
+            --border-radius: 10px;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            background: var(--bg-color);
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 30px;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+        }
+
+        .admin-logo {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            transition: var(--transition);
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.2);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-title {
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 15px 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Fallback for browsers that don't support background-clip */
+        @supports not (background-clip: text) {
+            .stat-value {
+                background: none;
+                color: var(--primary-color);
+                -webkit-text-fill-color: var(--primary-color);
+            }
+        }
+
+        /* Remove old vendor-specific rules */
+        /* ...existing code... */
+
+        /* Add animation for value changes */
+        .stat-value.updating {
+            animation: pulse 0.5s ease-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .users-table {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .edit-btn {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .delete-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .resources-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .branch-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .branch-CSE { background: #e3f2fd; color: #1565c0; }
+        .branch-IT { background: #f3e5f5; color: #7b1fa2; }
+        .branch-ECE { background: #e8f5e9; color: #2e7d32; }
+        .branch-EE { background: #fff3e0; color: #ef6c00; }
+        .branch-ME { background: #fbe9e7; color: #d84315; }
+        .branch-CE { background: #e0f7fa; color: #00838f; }
+        .branch-CHE { background: #f3e5f5; color: #6a1b9a; }
+        .branch-BT { background: #e8f5e9; color: #1b5e20; }
+        .branch-AE { background: #e1f5fe; color: #0277bd; }
+        .branch-PE { background: #fff3e0; color: #ef6c00; }
+
+        .chapter-controls {
+            margin-bottom: 20px;
+        }
+
+        .settings-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .settings-group {
+            margin-bottom: 30px;
+        }
+
+        .settings-group h3 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tools-grid {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .resources-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .admin-header-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .admin-profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .admin-profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-profile-info span {
+            font-weight: 500;
+        }
+
+        .admin-profile-info small {
+            color: #666;
+        }
+
+        /* Add these styles to your existing style section */
+        .sidebar-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .profile-image {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+
+        .image-upload {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--primary-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload:hover {
+            background: var(--secondary-color);
+        }
+
+        .image-upload i {
+            color: white;
+            font-size: 14px;
+        }
+
+        .profile-info {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .profile-info h3 {
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+
+        .profile-role {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+        }
+
+        .dashboard-title {
+            margin-bottom: 30px;
+            color: var(--text-color);
+            font-size: 1.8rem;
+        }
+
+        .stat-trend {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .stat-trend.positive {
+            color: var(--success-color);
+        }
+
+        .stat-trend.negative {
+            color: var(--error-color);
+        }
+
+        .dashboard-section {
+            margin-top: 40px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-section h3 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .activity-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .activity-card h4 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .user-list, .resource-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item, .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .branch-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .branch-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .branch-name {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .branch-count {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .branch-percentage {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Add to your existing style section */
+        .view-btn {
+            background: var(--success-color);
+            color: white;
+            margin-right: 5px;
+        }
+
+        .view-btn:hover {
+            background: #27ae60;
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Add these styles to improve the resource form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .form-group .file-input {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-group .file-input:hover {
+            border-color: var(--primary-color);
+        }
+
+        .study-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chapter-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .premium-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .chapter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .chapter-meta {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-profile">
+            <div class="profile-image">
+                <img src="https://via.placeholder.com/150" alt="Admin Profile" id="profileImage">
+                <div class="image-upload">
+                    <label for="imageInput">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none">
+                </div>
+            </div>
+            <div class="profile-info">
+                <h3 id="adminName">Admin Name</h3>
+                <p class="profile-role">System Administrator</p>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="sidebarTotalUsers">0</div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sidebarTotalResources">0</div>
+                    <div class="stat-label">Resources</div>
+                </div>
+            </div>
+        </div>
+        <nav>
+            <div class="nav-item">
+                <a href="#dashboard" class="nav-link active" onclick="showTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#users" class="nav-link" onclick="showTab('users')">
+                    <i class="fas fa-users"></i> Users
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#resources" class="nav-link" onclick="showTab('resources')">
+                    <i class="fas fa-book"></i> Resources
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#tools" class="nav-link" onclick="showTab('tools')">
+                    <i class="fas fa-tools"></i> Tools
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#settings" class="nav-link" onclick="showTab('settings')">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </div>
+            <a href="#" class="nav-link" onclick="openProfile()">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+            <!-- Add this to your sidebar navigation -->
+            <li class="nav-item">
+                <a href="chaptor.html" class="nav-link">
+                    <i class="fas fa-book"></i>
+                    <span>Chapter Management</span>
+                </a>
+            </li>
+            <div class="nav-item">
+                <a href="#study-chapters" class="nav-link" onclick="showTab('study-chapters')">
+                    <i class="fas fa-book-reader"></i>
+                    <span>Study Chapters</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div id="dashboard" class="tab-content active">
+            <h2 class="dashboard-title">Dashboard Overview</h2>
+            
+            <!-- Main Stats -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Users</span>
+                        <div class="stat-icon" style="background: var(--secondary-color)">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="userGrowth">0%</span> this month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Resources</span>
+                        <div class="stat-icon" style="background: var(--success-color)">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalResources">0</div>
+                    <div class="stat-trend">
+                        <span id="resourceCount">0</span> new this week
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Downloads</span>
+                        <div class="stat-icon" style="background: var(--warning-color)">
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalDownloads">0</div>
+                    <div class="stat-trend">
+                        <span id="downloadRate">0</span> today
+                    </div>
+                </div>
+                <!-- Add this to your dashboard stats section -->
+                <div class="stats-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-value" id="totalChapters">0</div>
+                    <div class="stat-label">Total Chapters</div>
+                </div>
+            </div>
+
+            <!-- Activity Overview -->
+            <div class="dashboard-section">
+                <h3>Recent Activity</h3>
+                <div class="activity-grid">
+                    <div class="activity-card">
+                        <h4>Latest Users</h4>
+                        <div class="user-list" id="latestUsers">
+                            <!-- Latest users will be populated here -->
+                        </div>
+                    </div>
+                    <div class="activity-card">
+                        <h4>Popular Resources</h4>
+                        <div class="resource-list" id="popularResources">
+                            <!-- Popular resources will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch Statistics -->
+            <div class="dashboard-section">
+                <h3>Branch Overview</h3>
+                <div class="branch-stats" id="branchStats">
+                    <!-- Branch statistics will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="users" class="tab-content">
+            <div class="users-table">
+                <div class="table-header">
+                    <h3>Registered Users</h3>
+                    <button class="action-btn" style="background: var(--success-color)" onclick="exportUsers()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- User data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="resources" class="tab-content">
+            <div class="resources-header">
+                <h2>Resource Management</h2>
+                <button class="action-btn" style="background: var(--success-color)" onclick="showAddResourceModal()">
+                    <i class="fas fa-plus"></i> Add New Resource
+                </button>
+            </div>
+            <div class="resources-header">
+                <div class="chapter-controls">
+                    <select id="chapterFilter" class="filter-select">
+                        <option value="all">All Chapters</option>
+                        <option value="1">Chapter 1: Introduction</option>
+                        <option value="2">Chapter 2: HTML Basics</option>
+                        <option value="3">Chapter 3: CSS Fundamentals</option>
+                        <option value="4">Chapter 4: JavaScript Essentials</option>
+                        <option value="5">Chapter 5: Responsive Design</option>
+                        <option value="6">Chapter 6: Web APIs</option>
+                        <option value="7">Chapter 7: Modern CSS</option>
+                        <option value="8">Chapter 8: JavaScript Framework</option>
+                        <option value="9">Chapter 9: Backend Basics</option>
+                        <option value="10">Chapter 10: Project Development</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="resources-grid">
+                <div class="resources-table">
+                    <div class="table-header">
+                        <h3>Available Resources</h3>
+                        <div class="filter-controls">
+                            <select id="branchFilter" class="filter-select">
+                                <option value="all">All Branches</option>
+                                ${BRANCHES.map(branch => `
+                                    <option value="${branch.id}">${branch.name}</option>
+                                `).join('')}
+                            </select>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="all">All Types</option>
+                                ${RESOURCE_TYPES.map(type => `
+                                    <option value="${type.id}">${type.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Branch</th>
+                                <th>Downloads</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resourceTableBody">
+                            <!-- Resources will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalResources">0</div>
+                    <div class="stat-label">Total Resources</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalDownloads">0</div>
+                    <div class="stat-label">Total Downloads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeBranches">0</div>
+                    <div class="stat-label">Active Branches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="resourceTypes">0</div>
+                    <div class="stat-label">Resource Types</div>
+                </div>
+            </div>
+
+            <div class="resources-container">
+                <iframe src="user_resources.html" frameborder="0" style="width: 100%; height: calc(100vh - 200px); border: none;"></iframe>
+            </div>
+        </div>
+
+        <!-- Add Resource Modal -->
+        <div id="addResourceModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add New Resource</h2>
+                <form id="resourceForm" onsubmit="handleResourceSubmit(event)">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="resourceTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Branch</label>
+                        <select id="resourceBranch" required>
+                            ${BRANCHES.map(branch => `
+                                <option value="${branch.id}">${branch.name}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="resourceType" required>
+                            ${RESOURCE_TYPES.map(type => `
+                                <option value="${type.id}">${type.name}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Chapter</label>
+                        <select id="resourceChapter" required>
+                            <option value="">Select Chapter</option>
+                            <option value="1">Chapter 1: Introduction</option>
+                            <option value="2">Chapter 2: HTML Basics</option>
+                            <option value="3">Chapter 3: CSS Fundamentals</option>
+                            <option value="4">Chapter 4: JavaScript Essentials</option>
+                            <option value="5">Chapter 5: Responsive Design</option>
+                            <option value="6">Chapter 6: Web APIs</option>
+                            <option value="7">Chapter 7: Modern CSS</option>
+                            <option value="8">Chapter 8: JavaScript Framework</option>
+                            <option value="9">Chapter 9: Backend Basics</option>
+                            <option value="10">Chapter 10: Project Development</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>File</label>
+                        <input type="file" id="resourceFile" required>
+                    </div>
+                    <button type="submit" class="action-btn" style="background: var(--success-color)">
+                        Add Resource
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="tools" class="tab-content">
+            <div class="tools-header">
+                <h2>Development Tools</h2>
+            </div>
+            <div class="tools-grid">
+                <iframe src="tools.html" frameborder="0" style="width: 100%; height: 800px;"></iframe>
+            </div>
+        </div>
+
+        <div id="settings" class="tab-content">
+            <iframe src="setting.html" frameborder="0" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <div id="study-chapters" class="tab-content">
+            <div class="dashboard-section">
+                <div class="chapter-controls">
+                    <a href="manage-study-chapters.html" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Chapter
+                    </a>
+                </div>
+                <div class="grid-container" id="chaptersContainer">
+                    <!-- Chapters will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Add other tab contents here -->
+    </div>
+
+    <script>
+        // Add this constant at the top of your script section
+        const BRANCHES = [
+            { id: 'CSE', name: 'Computer Science' },
+            { id: 'IT', name: 'Information Technology' },
+            { id: 'ECE', name: 'Electronics & Communication' },
+            { id: 'EE', name: 'Electrical Engineering' },
+            { id: 'ME', name: 'Mechanical Engineering' },
+            { id: 'CE', name: 'Civil Engineering' },
+            { id: 'CHE', name: 'Chemical Engineering' },
+            { id: 'BT', name: 'Biotechnology' },
+            { id: 'AE', name: 'Aerospace Engineering' },
+            { id: 'PE', name: 'Petroleum Engineering' }
+        ];
+
+        // Add this constant at the top with the BRANCHES constant
+        const RESOURCE_TYPES = [
+            { id: 'pdf', name: 'PDF Documents' },
+            { id: 'doc', name: 'Word Documents' },
+            { id: 'ppt', name: 'Presentations' },
+            { id: 'xls', name: 'Spreadsheets' },
+            { id: 'txt', name: 'Text Files' },
+            { id: 'img', name: 'Images' },
+            { id: 'code', name: 'Source Code' },
+            { id: 'zip', name: 'Archives' },
+            { id: 'video', name: 'Video Files' },
+            { id: 'audio', name: 'Audio Files' }
+        ];
+
+        // Add these functions to your existing script section
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
+            
+            // Populate settings form with saved values
+            document.getElementById('siteTitle').value = settings.siteTitle || 'Web Design Book';
+            document.getElementById('adminEmail').value = settings.adminEmail || '';
+            document.getElementById('emailNotifications').checked = settings.emailNotifications || false;
+            document.getElementById('resourceAlerts').checked = settings.resourceAlerts || false;
+            document.getElementById('maxFileSize').value = settings.maxFileSize || 50;
+            
+            // Load allowed file types
+            const allowedTypes = settings.allowedTypes || ['pdf', 'doc', 'ppt', 'zip'];
+            document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = allowedTypes.includes(checkbox.value);
+            });
+        }
+
+        function saveSettings(event) {
+            event.preventDefault();
+            
+            try {
+                const allowedTypes = Array.from(document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked'))
+                    .map(cb => cb.value);
+                    
+                const settings = {
+                    siteTitle: document.getElementById('siteTitle').value,
+                    adminEmail: document.getElementById('adminEmail').value,
+                    emailNotifications: document.getElementById('emailNotifications').checked,
+                    resourceAlerts: document.getElementById('resourceAlerts').checked,
+                    maxFileSize: document.getElementById('maxFileSize').value,
+                    allowedTypes: allowedTypes,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                localStorage.setItem('adminSettings', JSON.stringify(settings));
+                showNotification('Settings saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('Error saving settings', 'error');
+            }
+        }
+
+        // Add this function to handle tools loading
+        function loadTools() {
+            const toolsFrame = document.querySelector('#tools iframe');
+            if (toolsFrame) {
+                toolsFrame.onload = function() {
+                    // Send admin status to tools page
+                    toolsFrame.contentWindow.postMessage({ type: 'adminAccess', value: true }, '*');
+                };
+                toolsFrame.src = 'tools.html';
+            }
+        }
+
+        // Load user data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadResources();
+            updateDashboardStats();
+            populateBranchSelects();
+            populateTypeSelects(); // Add this line
+            loadSettings(); // Add this
+            loadTools(); // Add this
+            
+            // Add event listeners for filters
+            document.getElementById('branchFilter')?.addEventListener('change', (e) => {
+                loadResources(e.target.value, document.getElementById('typeFilter').value);
+            });
+            
+            document.getElementById('typeFilter')?.addEventListener('change', (e) => {
+                loadResources(document.getElementById('branchFilter').value, e.target.value);
+            });
+            
+            // Add modal close functionality
+            document.querySelector('.close-modal')?.addEventListener('click', () => {
+                document.getElementById('addResourceModal').style.display = 'none';
+            });
+            
+            populateBranchSelects();
+            initializeSettings();
+    
+            // Listen for settings changes
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'settingsUpdated') {
+                    initializeSettings();
+                    showNotification('Settings updated successfully', 'success');
+                }
+            });
+        });
+
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                
+                // If settings tab, reload settings
+                if (tabId === 'settings') {
+                    const settingsFrame = selectedTab.querySelector('iframe');
+                    if (settingsFrame) {
+                        settingsFrame.contentWindow.location.reload();
+                    }
+                }
+            }
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[href="#${tabId}"]`).classList.add('active');
+        }
+
+        function loadUserData() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const tableBody = document.getElementById('userTableBody');
+            
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.fullName}</td>
+                    <td>${user.email}</td>
+                    <td>${new Date(user.joinDate).toLocaleDateString()}</td>
+                    <td><span class="status-badge ${user.active ? 'active' : 'inactive'}">
+                        ${user.active ? 'Active' : 'Inactive'}
+                    </span></td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editUser('${user.email}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteUser('${user.email}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDashboardStats() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('activeUsers').textContent = users.filter(u => u.active).length;
+            document.getElementById('totalResources').textContent = resources.length;
+        }
+
+        function editUser(email) {
+            // Implement user editing functionality
+            console.log('Editing user:', email);
+        }
+
+        function deleteUser(email) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const updatedUsers = users.filter(u => u.email !== email);
+                localStorage.setItem('users', JSON.stringify(updatedUsers));
+                loadUserData();
+                updateDashboardStats();
+            }
+        }
+
+        function exportUsers() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "Name,Email,Join Date,Status\n" +
+                users.map(user => `${user.fullName},${user.email},${new Date(user.joinDate).toLocaleDateString()},${user.active ? 'Active' : 'Inactive'}`).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "users.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function loadResources(branch = 'all', type = 'all', chapter = 'all') {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const tableBody = document.getElementById('resourceTableBody');
+            
+            if (!tableBody) return;
+            
+            const filteredResources = resources.filter(resource => 
+                (branch === 'all' || resource.branch === branch) &&
+                (type === 'all' || resource.type === type) &&
+                (chapter === 'all' || resource.chapter === chapter)
+            );
+            
+            tableBody.innerHTML = filteredResources.map(resource => `
+                <tr>
+                    <td>${resource.title}</td>
+                    <td>${getResourceTypeName(resource.type)}</td>
+                    <td>
+                        <span class="branch-badge branch-${resource.branch}">
+                            ${getBranchName(resource.branch)}
+                        </span>
+                    </td>
+                    <td>${resource.downloads || 0}</td>
+                    <td class="resource-actions">
+                        <button class="action-btn view-btn" onclick="viewResource('${resource.id}')" title="Download">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="action-btn edit-btn" onclick="editResource('${resource.id}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteResource('${resource.id}')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Add function to view resource
+        function viewResource(id) {
+            try {
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                const resource = resources.find(r => r.id === id);
+                
+                if (resource && resource.fileData) {
+                    // Update download count
+                    const updatedResources = resources.map(r => {
+                        if (r.id === id) {
+                            return { ...r, downloads: (r.downloads || 0) + 1 };
+                        }
+                        return r;
+                    });
+                    
+                    // Save updated download count
+                    localStorage.setItem('resources', JSON.stringify(updatedResources));
+                    
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.href = resource.fileData;
+                    link.download = resource.fileName || `resource-${id}`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Update UI
+                    loadResources();
+                    updateDashboardStats();
+                    showNotification('Download started!', 'success');
+                } else {
+                    showNotification('Resource file not found', 'error');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                showNotification('Error downloading file', 'error');
+            }
+        }
+
+        function showAddResourceModal() {
+            document.getElementById('addResourceModal').style.display = 'block';
+        }
+
+        // Update the handleResourceSubmit function
+        function handleResourceSubmit(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('resourceFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Please select a file', 'error');
+                return;
+            }
+
+            // Add file size validation (e.g., 10MB limit)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                showNotification('File size should be less than 10MB', 'error');
+                return;
+            }
+
+            // Get form values
+            const title = document.getElementById('resourceTitle').value;
+            const branch = document.getElementById('resourceBranch').value;
+            const type = document.getElementById('resourceType').value;
+            const chapter = document.getElementById('resourceChapter').value;
+
+            if (!title || !branch || !type || !chapter) {
+                showNotification('Please fill all required fields', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const resource = {
+                        id: Date.now().toString(),
+                        title: title,
+                        branch: branch,
+                        type: type,
+                        chapter: chapter,
+                        downloads: 0,
+                        dateAdded: new Date().toISOString(),
+                        fileName: file.name,
+                        fileData: e.target.result,
+                        fileSize: file.size,
+                        mimeType: file.type
+                    };
+                    
+                    // Save to localStorage
+                    const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                    resources.push(resource);
+                    localStorage.setItem('resources', JSON.stringify(resources));
+                    
+                    // Close modal and reset form
+                    document.getElementById('addResourceModal').style.display = 'none';
+                    document.getElementById('resourceForm').reset();
+                    
+                    // Update UI
+                    loadResources();
+                    updateDashboardStats();
+                    showNotification('Resource added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding resource:', error);
+                    showNotification('Error adding resource', 'error');
+                }
+            };
+            
+            reader.onerror = function() {
+                showNotification('Error reading file', 'error');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        async function handleResourceSubmit(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('resourceFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            try {
+                // Convert file to base64
+                const base64File = await convertFileToBase64(file);
+                
+                const resource = {
+                    id: Date.now().toString(),
+                    title: document.getElementById('resourceTitle').value,
+                    branch: document.getElementById('resourceBranch').value,
+                    type: document.getElementById('resourceType').value,
+                    downloads: 0,
+                    dateAdded: new Date().toISOString(),
+                    fileName: file.name,
+                    fileData: base64File,
+                    isShared: true, // Add this flag to indicate the resource should be visible to users
+                    fileSize: file.size,
+                    mimeType: file.type,
+                    chapter: document.getElementById('resourceChapter').value,
+                };
+                
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                resources.push(resource);
+                localStorage.setItem('resources', JSON.stringify(resources));
+                
+                document.getElementById('addResourceModal').style.display = 'none';
+                document.getElementById('resourceForm').reset();
+                loadResources();
+                updateDashboardStats();
+                
+                // Show success notification
+                showNotification('Resource added successfully!', 'success');
+            } catch (error) {
+                console.error('Error adding resource:', error);
+                showNotification('Error adding resource. Please try again.', 'error');
+            }
+        }
+
+        // Add these helper functions
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function deleteResource(id) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                const updatedResources = resources.filter(r => r.id !== id);
+                localStorage.setItem('resources', JSON.stringify(updatedResources));
+                loadResources();
+                updateDashboardStats();
+            }
+        }
+
+        function populateBranchSelects() {
+            const branchFilter = document.getElementById('branchFilter');
+            const resourceBranch = document.getElementById('resourceBranch');
+            
+            const branchOptions = BRANCHES.map(branch => 
+                `<option value="${branch.id}">${branch.name}</option>`
+            ).join('');
+            
+            branchFilter.innerHTML = `<option value="all">All Branches</option>${branchOptions}`;
+            resourceBranch.innerHTML = branchOptions;
+        }
+
+        // Add this helper function with your other functions
+        function getResourceTypeName(typeId) {
+            const type = RESOURCE_TYPES.find(t => t.id === typeId);
+            return type ? type.name : typeId;
+        }
+
+        // Update getBranchName helper function
+        function getBranchName(branchId) {
+            const branch = BRANCHES.find(b => b.id === branchId);
+            return branch ? branch.name : branchId;
+        }
+
+        // Add this function to populate type selects
+        function populateTypeSelects() {
+            const typeFilter = document.getElementById('typeFilter');
+            const resourceType = document.getElementById('resourceType');
+            
+            const typeOptions = RESOURCE_TYPES.map(type => 
+                `<option value="${type.id}">${type.name}</option>`
+            ).join('');
+            
+            typeFilter.innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+            resourceType.innerHTML = typeOptions;
+        }
+
+        function saveSettings(event) {
+            event.preventDefault();
+            const settings = {
+                siteTitle: document.getElementById('siteTitle').value,
+                adminEmail: document.getElementById('adminEmail').value,
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                resourceAlerts: document.getElementById('resourceAlerts').checked,
+                maxFileSize: document.getElementById('maxFileSize').value,
+            };
+            
+            localStorage.setItem('adminSettings', JSON.stringify(settings));
+            showNotification('Settings saved successfully!', 'success');
+        }
+
+        // Add event listener for settings form
+        document.getElementById('settingsForm')?.addEventListener('submit', saveSettings);
+
+        // Add chapter filter event listener
+        document.getElementById('chapterFilter')?.addEventListener('change', (e) => {
+            loadResources(
+                document.getElementById('branchFilter').value,
+                document.getElementById('typeFilter').value,
+                e.target.value
+            );
+        });
+
+        // Add to your existing script section
+
+        function initializeSettings() {
+            // Load settings from localStorage
+            const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
+            
+            // Apply theme if set
+            if (settings.theme) {
+                document.body.className = settings.theme;
+            }
+            
+            // Apply custom colors if set
+            if (settings.primaryColor) {
+                document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+            }
+            
+            // Apply font size if set
+            if (settings.fontSize) {
+                document.body.style.fontSize = settings.fontSize === 'small' ? '14px' : 
+                                             settings.fontSize === 'large' ? '18px' : '16px';
+            }
+        }
+
+        // Update showTab function to handle settings
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                
+                // If settings tab, reload settings
+                if (tabId === 'settings') {
+                    const settingsFrame = selectedTab.querySelector('iframe');
+                    if (settingsFrame) {
+                        settingsFrame.contentWindow.location.reload();
+                    }
+                }
+            }
+            
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[href="#${tabId}"]`).classList.add('active');
+        }
+
+        // Add to your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            initializeSettings();
+            
+            // Listen for settings changes
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'settingsUpdated') {
+                    initializeSettings();
+                    showNotification('Settings updated successfully', 'success');
+                }
+            });
+        });
+
+        // Add to your script section
+
+        function loadResourceStats() {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            
+            // Update dashboard stats
+            document.getElementById('totalResources').textContent = resources.length;
+            
+            // Calculate total downloads
+            const totalDownloads = resources.reduce((sum, resource) => sum + (resource.downloads || 0), 0);
+            document.getElementById('totalDownloads').textContent = totalDownloads;
+            
+            // Get unique branches and types
+            const uniqueBranches = new Set(resources.map(r => r.branch));
+            const uniqueTypes = new Set(resources.map(r => r.type));
+            
+            document.getElementById('totalBranches').textContent = uniqueBranches.size;
+            document.getElementById('resourceTypes').textContent = uniqueTypes.size;
+        }
+
+        // Add storage event listener for real-time updates
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'resources') {
+                loadResourceStats();
+            }
+        });
+
+        // Update your DOMContentLoaded event
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing code...
+            loadResourceStats();
+        });
+
+        // Add this to your existing script section
+
+        function initializeResourceManagement() {
+            // Update dashboard stats
+            function updateResourceStats() {
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                const totalDownloads = resources.reduce((sum, r) => sum + (r.downloads || 0), 0);
+                const uniqueBranches = new Set(resources.map(r => r.branch));
+                const uniqueTypes = new Set(resources.map(r => r.type));
+
+                document.getElementById('totalResources').textContent = resources.length;
+                document.getElementById('totalDownloads').textContent = totalDownloads;
+                document.getElementById('activeBranches').textContent = uniqueBranches.size;
+                document.getElementById('resourceTypes').textContent = uniqueTypes.size;
+            }
+
+            // Listen for resource changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'resources') {
+                    updateResourceStats();
+                }
+            });
+
+            // Initial load
+            updateResourceStats();
+        }
+
+        // Add this to your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... existing initialization code ...
+            initializeResourceManagement();
+
+            // Add resources tab click handler
+            document.querySelector('[href="#resources"]')?.addEventListener('click', () => {
+                showTab('resources');
+            });
+        });
+
+        // Add this to your script section
+        function openProfile() {
+            const profileWindow = window.open('admin profile.html', '_blank', 'width=1200,height=800');
+            if (profileWindow) {
+                profileWindow.focus();
+            } else {
+                alert('Please allow popups for this site');
+            }
+        }
+
+        // Add this to your DOMContentLoaded event listener
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'profileUpdate') {
+                // Update profile image in admin dashboard if you have one
+                const profileImage = document.querySelector('.admin-profile-image');
+                if (profileImage) {
+                    profileImage.src = event.data.imageUrl;
+                }
+            }
+        });
+
+        // Add to your DOMContentLoaded event listener
+        function loadAdminProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            const headerImage = document.getElementById('headerProfileImage');
+            const headerName = document.getElementById('headerAdminName');
+            
+            if (profile.imageUrl) {
+                headerImage.src = profile.imageUrl;
+            }
+            if (profile.fullName) {
+                headerName.textContent = profile.fullName;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing code...
+            loadAdminProfile();
+        });
+
+        // Add these functions to your script section
+
+        // Update the profile image handling
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Please select an image file', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImage').src = e.target.result;
+                    
+                    // Save to localStorage
+                    const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+                    profile.imageUrl = e.target.result;
+                    localStorage.setItem('adminProfile', JSON.stringify(profile));
+                    
+                    showNotification('Profile picture updated successfully!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Update the loadAdminProfile function
+        function loadAdminProfile() {
+            const profile = JSON.parse(localStorage.getItem('adminProfile') || '{}');
+            
+            if (profile.imageUrl) {
+                document.getElementById('profileImage').src = profile.imageUrl;
+            }
+            if (profile.fullName) {
+                document.getElementById('adminName').textContent = profile.fullName;
+            }
+            
+            // Update sidebar stats
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            
+            document.getElementById('sidebarTotalUsers').textContent = users.length;
+            document.getElementById('sidebarTotalResources').textContent = resources.length;
+        }
+
+        // Update your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing initialization code...
+            
+            loadAdminProfile();
+            
+            // Add image upload handler
+            document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+            
+            // Add storage event listener for profile updates
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'adminProfile') {
+                    loadAdminProfile();
+                }
+            });
+        });
+
+        function updateChapterStats() {
+            const settings = JSON.parse(localStorage.getItem('resourceSettings')) || { chapters: [] };
+            document.getElementById('totalChapters').textContent = settings.chapters.length;
+        }
+
+        // Add to your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing code...
+            updateChapterStats();
+            
+            // Listen for settings changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'resourceSettings') {
+                    updateChapterStats();
+                }
+            });
+        });
+
+        // Add smooth animations on stat updates
+        function animateValue(element, start, end, duration) {
+            let current = start;
+            const range = end - start;
+            const increment = range / (duration / 16);
+            const timer = setInterval(() => {
+                current += increment;
+                element.textContent = Math.floor(current);
+                if (current >= end) {
+                    element.textContent = end;
+                    clearInterval(timer);
+                }
+            }, 16);
+        }
+
+        // Update dashboard stats with animation
+        function updateDashboardStats() {
+            const stats = document.querySelectorAll('.stat-value');
+            stats.forEach(stat => {
+                const value = parseInt(stat.getAttribute('data-value'));
+                animateValue(stat, 0, value, 1000);
+            });
+        }
+
+        // Update hover effects
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('mouseenter', e => {
+                const icon = e.currentTarget.querySelector('i');
+                icon.style.transform = 'scale(1.2) rotate(5deg)';
+            });
+            
+            link.addEventListener('mouseleave', e => {
+                const icon = e.currentTarget.querySelector('i');
+                icon.style.transform = 'scale(1) rotate(0)';
+            });
+        });
+
+        // Add to your existing initialization code
+        function initializeStudyChapters() {
+            loadStudyChapters();
+            
+            // Add form submit handler
+            document.getElementById('studyChapterForm')?.addEventListener('submit', handleStudyChapterSubmit);
+        }
+
+        function handleStudyChapterSubmit(event) {
+            event.preventDefault();
+            
+            const newChapter = {
+                id: Date.now(),
+                title: document.getElementById('chapterTitle').value,
+                description: document.getElementById('chapterDescription').value,
+                resources: document.getElementById('resources').value.split(',').map(r => r.trim()),
+                isPremium: document.getElementById('isPremium').checked,
+                createdAt: new Date().toISOString()
+            };
+
+            const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+            chapters.push(newChapter);
+            localStorage.setItem('studyChapters', JSON.stringify(chapters));
+            
+            event.target.reset();
+            loadStudyChapters();
+            showNotification('Study chapter added successfully!', 'success');
+        }
+
+        function loadStudyChapters() {
+            const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+            const container = document.getElementById('studyChaptersList');
+            
+            if (!container) return;
+
+            container.innerHTML = chapters.map(chapter => `
+                <div class="chapter-card">
+                    ${chapter.isPremium ? '<span class="premium-indicator">Premium</span>' : ''}
+                    <h3>${chapter.title}</h3>
+                    <p>${chapter.description}</p>
+                    <small>Resources: ${chapter.resources.join(', ') || 'None'}</small>
+                    <div class="chapter-actions">
+                        <button onclick="editStudyChapter(${chapter.id})" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deleteStudyChapter(${chapter.id})" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteStudyChapter(id) {
+            if (confirm('Are you sure you want to delete this chapter?')) {
+                const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+                const updated = chapters.filter(ch => ch.id !== id);
+                localStorage.setItem('studyChapters', JSON.stringify(updated));
+                loadStudyChapters();
+                showNotification('Chapter deleted successfully', 'success');
+            }
+        }
+
+        function editStudyChapter(id) {
+            const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+            const chapter = chapters.find(ch => ch.id === id);
+            
+            if (chapter) {
+                document.getElementById('chapterTitle').value = chapter.title;
+                document.getElementById('chapterDescription').value = chapter.description;
+                document.getElementById('resources').value = chapter.resources.join(', ');
+                document.getElementById('isPremium').checked = chapter.isPremium;
+                
+                // Scroll to form
+                document.querySelector('.study-form').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Add to your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            // ...existing initialization code...
+            initializeStudyChapters();
+        });
+
+        // Add this after your existing showTab function
+        function loadChapters() {
+            const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+            const container = document.getElementById('chaptersContainer');
+            
+            if (!container) return;
+            
+            if (chapters.length === 0) {
+                container.innerHTML = '<p>No chapters available</p>';
+                return;
+            }
+
+            container.innerHTML = chapters.map(chapter => `
+                <div class="chapter-card">
+                    ${chapter.isPremium ? '<span class="premium-indicator">Premium</span>' : ''}
+                    <h3>${chapter.title}</h3>
+                    <p>${chapter.description}</p>
+                    <div class="chapter-meta">
+                        <small>Resources: ${chapter.resources?.length || 0}</small>
+                        <small>Added: ${new Date(chapter.dateAdded).toLocaleDateString()}</small>
+                    </div>
+                    <div class="chapter-actions">
+                        <a href="manage-study-chapters.html?edit=${chapter.id}" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button onclick="deleteChapter(${chapter.id})" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteChapter(id) {
+            if (confirm('Are you sure you want to delete this chapter?')) {
+                const chapters = JSON.parse(localStorage.getItem('studyChapters') || '[]');
+                const filtered = chapters.filter(ch => ch.id !== id);
+                localStorage.setItem('studyChapters', JSON.stringify(filtered));
+                loadChapters();
+                showNotification('Chapter deleted successfully', 'success');
+            }
+        }
+
+        // Add this to your existing DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...existing code...
+            
+            // Add event listener for study chapters tab
+            document.querySelector('[href="#study-chapters"]')?.addEventListener('click', () => {
+                showTab('study-chapters');
+                loadChapters();
+            });
+            
+            // Listen for storage changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'studyChapters') {
+                    loadChapters();
+                }
+            });
+        });
+
+        // Check authentication on page load
+        function checkAuth() {
+            const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+            const expiry = sessionStorage.getItem('authExpiry');
+            
+            if (!isAuthenticated || !expiry || parseInt(expiry) < Date.now()) {
+                // Session expired or not authenticated
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Display admin username
+            const username = sessionStorage.getItem('adminUsername');
+            document.getElementById('adminUsername').textContent = username;
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Check authentication when page loads
+        window.onload = checkAuth;
+
+        // Check authentication periodically
+        setInterval(checkAuth, 60000); // Check every minute
+
+        // Add this function to handle settings updates
+        function applyAdminSettings(settings) {
+            // Apply font size
+            document.body.style.fontSize = settings.fontSize === 'small' ? '14px' : 
+                                         settings.fontSize === 'large' ? '18px' : '16px';
+
+            // Apply primary color
+            document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#4361ee');
+
+            // Update site title if it exists
+            const siteTitle = document.querySelector('.admin-logo');
+            if (siteTitle && settings.siteTitle) {
+                siteTitle.textContent = settings.siteTitle;
+            }
+        }
+
+        // Update the message event listener
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'settingsUpdated') {
+                // Apply the new settings
+                applyAdminSettings(event.data.settings);
+                
+                // Show notification
+                showNotification('Settings updated successfully', 'success');
+                
+                // Reload resources to reflect new settings
+                loadResources();
+            }
+        });
+
+        // Add this to your initialization code
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load and apply saved settings
+            const savedSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
+            applyAdminSettings(savedSettings);
+            
+            // ...rest of your existing initialization code...
+        });
+    </script>
+</body>
+</html>

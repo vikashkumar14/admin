@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --bg-color: #f8f9fa;
+            --text-color: #2b2d42;
+            --border-radius: 10px;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 2rem;
+        }
+
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+        }
+
+        .settings-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .settings-header h1 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-group {
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+        }
+
+        .settings-group h2 {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #eee;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            outline: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .settings-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: var(--text-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .theme-preview {
+            width: 100px;
+            height: 60px;
+            border-radius: var(--border-radius);
+            margin-top: 0.5rem;
+            border: 2px solid #eee;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.active {
+            border-color: var(--primary-color);
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            background: var(--success-color);
+            color: white;
+            border-radius: var(--border-radius);
+            transform: translateY(-100%);
+            transition: var(--transition);
+            opacity: 0;
+        }
+
+        .save-indicator.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+    <script src="../js/settingsController.js"></script>
+    <script src="../js/settings.js"></script>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>Settings</h1>
+            <p>Manage your admin dashboard preferences</p>
+        </div>
+
+        <form id="settingsForm">
+            <div class="settings-group">
+                <h2>General Settings</h2>
+                <div class="form-group">
+                    <label for="siteTitle">Site Title</label>
+                    <input type="text" id="siteTitle" class="form-control" value="Web Design Book">
+                </div>
+                <div class="form-group">
+                    <label for="adminEmail">Admin Email</label>
+                    <input type="email" id="adminEmail" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h2>Theme Settings</h2>
+                <div class="form-group">
+                    <label>Color Scheme</label>
+                    <div class="color-picker">
+                        <div class="color-option active" style="background: #4361ee" data-color="#4361ee"></div>
+                        <div class="color-option" style="background: #2a9d8f" data-color="#2a9d8f"></div>
+                        <div class="color-option" style="background: #e63946" data-color="#e63946"></div>
+                        <div class="color-option" style="background: #ff9f1c" data-color="#ff9f1c"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Font Size</label>
+                    <select class="form-control" id="fontSize">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h2>Notification Settings</h2>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="emailNotifications">
+                        Email Notifications
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="resourceAlerts">
+                        Resource Alerts
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="userAlerts">
+                        User Activity Alerts
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetSettings()">Reset</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="save-indicator" id="saveIndicator">Settings saved successfully!</div>
+
+    <script>
+        const settingsController = new SettingsController();
+
+        // Update loadSettings function
+        function loadSettings() {
+            try {
+                const settings = settingsController.loadSettings();
+                
+                // Apply to form
+                document.getElementById('siteTitle').value = settings.siteTitle || 'Web Design Book';
+                document.getElementById('adminEmail').value = settings.adminEmail || '';
+                document.getElementById('emailNotifications').checked = settings.emailNotifications || false;
+                document.getElementById('resourceAlerts').checked = settings.resourceAlerts || false;
+                document.getElementById('userAlerts').checked = settings.userAlerts || false;
+                document.getElementById('fontSize').value = settings.fontSize || 'medium';
+
+                // Update color scheme
+                const activeColor = settings.primaryColor || '#4361ee';
+                document.querySelectorAll('.color-option').forEach(option => {
+                    option.classList.toggle('active', option.dataset.color === activeColor);
+                });
+
+                settingsController.applySettings(settings);
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showNotification('Error loading settings', 'error');
+            }
+        }
+
+        // Update form submission
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                const settings = {
+                    siteTitle: document.getElementById('siteTitle').value,
+                    adminEmail: document.getElementById('adminEmail').value,
+                    emailNotifications: document.getElementById('emailNotifications').checked,
+                    resourceAlerts: document.getElementById('resourceAlerts').checked,
+                    userAlerts: document.getElementById('userAlerts').checked,
+                    fontSize: document.getElementById('fontSize').value,
+                    primaryColor: document.querySelector('.color-option.active').dataset.color,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                // Save and apply settings
+                window.settingsManager.saveSettings(settings);
+                
+                // Show success message
+                showNotification('Settings saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('Error saving settings', 'error');
+            }
+        });
+
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = message;
+            indicator.className = `save-indicator ${type}`;
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 3000);
+        }
+
+        // Reset settings function
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings?')) {
+                const defaultSettings = {
+                    siteTitle: 'Web Design Book',
+                    adminEmail: '',
+                    emailNotifications: false,
+                    resourceAlerts: false,
+                    userAlerts: false,
+                    fontSize: 'medium',
+                    primaryColor: '#4361ee'
+                };
+                
+                localStorage.setItem('adminSettings', JSON.stringify(defaultSettings));
+                loadSettings();
+                showNotification('Settings reset to default', 'info');
+                
+                // Notify parent window
+                window.parent.postMessage({
+                    type: 'settingsUpdated',
+                    settings: defaultSettings
+                }, '*');
+            }
+        }
+
+        // Handle real-time color changes
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                document.documentElement.style.setProperty('--primary-color', this.dataset.color);
+            });
+        });
+
+        // Handle real-time font size changes
+        document.getElementById('fontSize').addEventListener('change', function() {
+            const size = this.value === 'small' ? '14px' : this.value === 'large' ? '18px' : '16px';
+            document.body.style.fontSize = size;
+        });
+
+        // Initialize settings on page load
+        document.addEventListener('DOMContentLoaded', loadSettings);
+
+        // Listen for storage changes from other tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'adminSettings') {
+                loadSettings();
+            }
+        });
+    </script>
+</body>
+</html>

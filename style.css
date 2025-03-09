@@ -1,0 +1,72 @@
+.resource-section {
+    margin-top: 30px;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+}
+
+.resource-list {
+    margin-top: 20px;
+}
+
+.resource-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #77aaff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.resource-info {
+    flex-grow: 1;
+}
+
+.file-upload-btn {
+    background: #77aaff;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.file-upload-btn:hover {
+    background: #5588dd;
+}
+
+.download-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 5px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.download-btn:hover {
+    background: #45a049;
+}
+
+.upload-progress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.resource-actions {
+    display: flex;
+    gap: 10px;
+}

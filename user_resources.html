@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e88e5;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --error-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .add-btn {
+            padding: 10px 20px;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            min-width: 150px;
+            font-size: 14px;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .resources-table {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .edit-btn { background: var(--warning-color); }
+        .delete-btn { background: var(--error-color); }
+        .view-btn { background: var(--primary-color); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .file-preview {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .filter-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #f5f6fa;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Modern Table */
+        .resources-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: relative;
+            max-width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #95a5a6;
+        }
+
+        /* Add to your existing style section */
+        .settings-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .settings-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link.settings {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-link.settings:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .download-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            background: #27ae60;
+        }
+
+        /* Add these styles */
+        .file-preview-container {
+            margin-top: 10px;
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+
+        .file-preview i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .file-preview div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-preview small {
+            color: #666;
+        }
+
+        /* Add these styles to your existing style section */
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .nav-link i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Resource Panel</h2>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showAddModal()">
+                        <i class="fas fa-plus"></i> Add Resource
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="openSettings()">
+                        <i class="fas fa-cog"></i> Resource Settings
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalResources">0</div>
+                    <div class="stat-label">Total Resources</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalBranches">0</div>
+                    <div class="stat-label">Active Branches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTypes">0</div>
+                    <div class="stat-label">Resource Types</div>
+                </div>
+            </div>
+
+            <div class="resources-table">
+                <div class="table-header">
+                    <h2>Resources List</h2>
+                    <div class="search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search resources...">
+                    </div>
+                </div>
+                <div class="controls">
+                    <select id="branchFilter" class="filter-select">
+                        <option value="all">All Branches</option>
+                    </select>
+                    <select id="typeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                    </select>
+                    <select id="chapterFilter" class="filter-select">
+                        <option value="all">All Chapters</option>
+                    </select>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Branch</th>
+                            <th>Downloads</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resourcesTableBody">
+                        <!-- Resources will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Resource Modal -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Resource</h2>
+            <form id="resourceForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="resourceTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Branch</label>
+                    <select id="resourceBranch" class="form-control" required>
+                        <option value="">Select Branch</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="resourceType" class="form-control" required>
+                        <option value="">Select Type</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Chapter</label>
+                    <select id="resourceChapter" class="form-control" required>
+                        <option value="">Select Chapter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>File</label>
+                    <input type="file" id="resourceFile" class="form-control" required>
+                </div>
+                <div id="filePreview" class="file-preview-container"></div>
+                <button type="submit" class="add-btn">
+                    <i class="fas fa-save"></i> Save Resource
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Add this function to initialize default settings if none exist
+        function initializeDefaultSettings() {
+            const currentSettings = localStorage.getItem('resourceSettings');
+            if (!currentSettings) {
+                const defaultSettings = {
+                    branches: [
+                        { value: 'CSE', name: 'Computer Science' },
+                        { value: 'IT', name: 'Information Technology' },
+                        { value: 'ECE', name: 'Electronics & Communication' },
+                        { value: 'EE', name: 'Electrical Engineering' },
+                        { value: 'ME', name: 'Mechanical Engineering' }
+                    ],
+                    types: [
+                        { value: 'pdf', name: 'PDF Documents' },
+                        { value: 'doc', name: 'Word Documents' },
+                        { value: 'ppt', name: 'Presentations' },
+                        { value: 'video', name: 'Video Files' },
+                        { value: 'code', name: 'Source Code' }
+                    ],
+                    chapters: Array.from({ length: 10 }, (_, i) => ({
+                        value: `chapter-${i + 1}`,
+                        name: `Chapter ${i + 1}`
+                    }))
+                };
+                localStorage.setItem('resourceSettings', JSON.stringify(defaultSettings));
+                return defaultSettings;
+            }
+            return JSON.parse(currentSettings);
+        }
+
+        // Update the loadResourceSettings function
+        function loadResourceSettings() {
+            const settings = JSON.parse(localStorage.getItem('resourceSettings'));
+            if (!settings) return;
+
+            // Update branch filter
+            const branchFilter = document.getElementById('branchFilter');
+            if (branchFilter) {
+                branchFilter.innerHTML = `
+                    <option value="all">All Branches</option>
+                    ${settings.branches.map(branch => 
+                        `<option value="${branch.id}">${branch.name}</option>`
+                    ).join('')}
+                `;
+            }
+
+            // Update type filter
+            const typeFilter = document.getElementById('typeFilter');
+            if (typeFilter) {
+                typeFilter.innerHTML = `
+                    <option value="all">All Types</option>
+                    ${settings.types.map(type => 
+                        `<option value="${type.id}">${type.name}</option>`
+                    ).join('')}
+                `;
+            }
+
+            // Update chapter filter
+            const chapterFilter = document.getElementById('chapterFilter');
+            if (chapterFilter) {
+                chapterFilter.innerHTML = `
+                    <option value="all">All Chapters</option>
+                    ${settings.chapters.map(chapter => 
+                        `<option value="${chapter.id}">${chapter.name}</option>`
+                    ).join('')}
+                `;
+            }
+        }
+
+        // Add this function to update all dropdowns
+        function updateAllDropdowns() {
+            const settings = loadResourceSettings();
+            
+            // Update branch dropdowns
+            const branchFilter = document.getElementById('branchFilter');
+            const resourceBranch = document.getElementById('resourceBranch');
+            
+            const branchOptions = settings.branches.map(branch => 
+                `<option value="${branch.value}">${branch.name}</option>`
+            ).join('');
+            
+            if (branchFilter) {
+                branchFilter.innerHTML = `<option value="all">All Branches</option>${branchOptions}`;
+            }
+            if (resourceBranch) {
+                resourceBranch.innerHTML = `<option value="">Select Branch</option>${branchOptions}`;
+            }
+
+            // Update type dropdowns
+            const typeFilter = document.getElementById('typeFilter');
+            const resourceType = document.getElementById('resourceType');
+            
+            const typeOptions = settings.types.map(type => 
+                `<option value="${type.value}">${type.name}</option>`
+            ).join('');
+            
+            if (typeFilter) {
+                typeFilter.innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+            }
+            if (resourceType) {
+                resourceType.innerHTML = `<option value="">Select Type</option>${typeOptions}`;
+            }
+
+            // Update chapter dropdowns
+            const chapterFilter = document.getElementById('chapterFilter');
+            const resourceChapter = document.getElementById('resourceChapter');
+            
+            const chapterOptions = settings.chapters.map(chapter => 
+                `<option value="${chapter.value}">${chapter.name}</option>`
+            ).join('');
+            
+            if (chapterFilter) {
+                chapterFilter.innerHTML = `<option value="all">All Chapters</option>${chapterOptions}`;
+            }
+            if (resourceChapter) {
+                resourceChapter.innerHTML = `<option value="">Select Chapter</option>${chapterOptions}`;
+            }
+        }
+
+        // Add event listeners for changes
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAllDropdowns();
+            
+            // Listen for settings changes
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'resourceSettings') {
+                    updateAllDropdowns();
+                }
+            });
+
+            // Add filter change handlers
+            ['branchFilter', 'typeFilter', 'chapterFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', filterResources);
+                }
+            });
+        });
+
+        // Update the DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const settings = loadResourceSettings();
+            console.log('Loaded settings:', settings); // Debug log
+            
+            // Load resources
+            loadResources();
+            updateStats();
+            
+            // Add filter change handlers
+            ['branchFilter', 'typeFilter', 'chapterFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', filterResources);
+                }
+            });
+
+            // Add form submit handler
+            const resourceForm = document.getElementById('resourceForm');
+            if (resourceForm) {
+                resourceForm.addEventListener('submit', handleResourceSubmit);
+            }
+
+            // Add this to your DOMContentLoaded event listener
+            const fileInput = document.getElementById('resourceFile');
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        showFilePreview(file);
+                    }
+                });
+            }
+        });
+
+        // Update or add these constants at the top of your script
+        const BRANCHES = [
+            { id: 'CSE', name: 'Computer Science' },
+            { id: 'IT', name: 'Information Technology' },
+            { id: 'ECE', name: 'Electronics & Communication' },
+            { id: 'EE', name: 'Electrical Engineering' },
+            { id: 'ME', name: 'Mechanical Engineering' },
+            { id: 'CE', name: 'Civil Engineering' },
+            { id: 'CHE', name: 'Chemical Engineering' },
+            { id: 'BT', name: 'Biotechnology' },
+            { id: 'AE', name: 'Aerospace Engineering' },
+            { id: 'PE', name: 'Petroleum Engineering' }
+        ];
+
+        const RESOURCE_TYPES = [
+            { id: 'pdf', name: 'PDF Documents' },
+            { id: 'doc', name: 'Word Documents' },
+            { id: 'ppt', name: 'Presentations' },
+            { id: 'xls', name: 'Spreadsheets' },
+            { id: 'txt', name: 'Text Files' },
+            { id: 'img', name: 'Images' },
+            { id: 'code', name: 'Source Code' },
+            { id: 'zip', name: 'Archives' },
+            { id: 'video', name: 'Video Files' },
+            { id: 'audio', name: 'Audio Files' }
+        ];
+
+        const CHAPTERS = Array.from({ length: 10 }, (_, i) => ({
+            id: (i + 1).toString(),
+            name: `Chapter ${i + 1}`
+        }));
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize settings first
+            loadResourceSettings();
+            
+            // Then load resources and update stats
+            loadResources();
+            updateStats();
+            
+            // Add event listeners
+            const resourceForm = document.getElementById('resourceForm');
+            if (resourceForm) {
+                resourceForm.addEventListener('submit', handleResourceSubmit);
+            }
+
+            // Add filter change handlers
+            ['branchFilter', 'typeFilter', 'chapterFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', filterResources);
+                }
+            });
+
+            // Add search functionality
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterResources(searchTerm);
+                });
+            }
+
+            // Add modal close handler
+            document.querySelector('.modal-close')?.addEventListener('click', closeModal);
+            
+            // Add click outside modal to close
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    closeModal();
+                }
+            });
+
+            // Add storage event listener for settings updates
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'resourceSettings') {
+                    loadResourceSettings();
+                }
+            });
+        });
+
+        // Populate select elements
+        function populateSelects() {
+            // Populate branch selects
+            const branchOptions = BRANCHES.map(branch => 
+                `<option value="${branch.id}">${branch.name}</option>`
+            ).join('');
+            
+            document.getElementById('branchFilter').innerHTML += branchOptions;
+            document.getElementById('resourceBranch').innerHTML = branchOptions;
+
+            // Populate type selects
+            const typeOptions = RESOURCE_TYPES.map(type => 
+                `<option value="${type.id}">${type.name}</option>`
+            ).join('');
+            
+            document.getElementById('typeFilter').innerHTML += typeOptions;
+            document.getElementById('resourceType').innerHTML = typeOptions;
+
+            // Populate chapter selects
+            const chapterOptions = CHAPTERS.map(chapter => 
+                `<option value="${chapter.id}">Chapter ${chapter.id}</option>`
+            ).join('');
+            
+            document.getElementById('chapterFilter').innerHTML += chapterOptions;
+            document.getElementById('resourceChapter').innerHTML = chapterOptions;
+        }
+
+        // Update the loadResources function
+        function loadResources() {
+            try {
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                const settings = JSON.parse(localStorage.getItem('resourceSettings') || '{}');
+                
+                // Apply settings filters
+                const filteredResources = resources.filter(resource => {
+                    // Check if resource type is allowed in settings
+                    if (settings.allowedTypes && !settings.allowedTypes.includes(resource.type)) {
+                        return false;
+                    }
+                    // Check if resource size is within limit
+                    if (settings.maxFileSize && resource.fileSize > settings.maxFileSize * 1024 * 1024) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Update display with filtered resources
+                displayResources(filteredResources);
+            } catch (error) {
+                console.error('Error loading resources:', error);
+            }
+        }
+
+        // Helper functions
+        function getBranchName(id) {
+            const settings = JSON.parse(localStorage.getItem('resourceSettings') || '{}');
+            const branch = settings.branches?.find(b => b.value === id);
+            return branch ? branch.name : id;
+        }
+
+        function getResourceTypeName(id) {
+            const settings = JSON.parse(localStorage.getItem('resourceSettings') || '{}');
+            const type = settings.types?.find(t => t.value === id);
+            return type ? type.name : id;
+        }
+
+        // Modal functions
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add Resource';
+            document.getElementById('resourceForm').reset();
+            document.getElementById('resourceModal').style.display = 'block';
+        }
+
+        // Update the handleResourceSubmit function
+        async function handleResourceSubmit(event) {
+            event.preventDefault();
+            
+            try {
+                const form = event.target;
+                const fileInput = document.getElementById('resourceFile');
+                const file = fileInput.files[0];
+
+                if (!file && !form.dataset.editId) {
+                    showNotification('Please select a file', 'error');
+                    return;
+                }
+
+                // Validate file size (max 10MB)
+                const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+                if (file && file.size > maxSize) {
+                    showNotification('File size should be less than 10MB', 'error');
+                    return;
+                }
+
+                // Create resource object
+                const resource = {
+                    id: form.dataset.editId || Date.now().toString(),
+                    title: document.getElementById('resourceTitle').value,
+                    branch: document.getElementById('resourceBranch').value,
+                    type: document.getElementById('resourceType').value,
+                    chapter: document.getElementById('resourceChapter').value,
+                    downloads: 0,
+                    dateAdded: new Date().toISOString()
+                };
+
+                // Handle file upload
+                if (file) {
+                    try {
+                        const base64Data = await readFileAsDataURL(file);
+                        resource.fileName = file.name;
+                        resource.fileType = file.type;
+                        resource.fileSize = file.size;
+                        resource.fileData = base64Data;
+                    } catch (error) {
+                        showNotification('Error processing file', 'error');
+                        console.error('File processing error:', error);
+                        return;
+                    }
+                }
+
+                // Save to localStorage
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                
+                if (form.dataset.editId) {
+                    // Update existing resource
+                    const index = resources.findIndex(r => r.id === form.dataset.editId);
+                    if (index !== -1) {
+                        // Preserve existing file if no new file is uploaded
+                        if (!file) {
+                            const existingResource = resources[index];
+                            resource.fileName = existingResource.fileName;
+                            resource.fileType = existingResource.fileType;
+                            resource.fileSize = existingResource.fileSize;
+                            resource.fileData = existingResource.fileData;
+                        }
+                        resources[index] = { ...resources[index], ...resource };
+                    }
+                } else {
+                    // Add new resource
+                    resources.push(resource);
+                }
+
+                localStorage.setItem('resources', JSON.stringify(resources));
+                
+                // Update UI
+                showNotification('Resource saved successfully!', 'success');
+                closeModal();
+                loadResources();
+                updateStats();
+
+            } catch (error) {
+                console.error('Error saving resource:', error);
+                showNotification('Error saving resource', 'error');
+            }
+        }
+
+        // Update the readFileAsDataURL function
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = () => {
+                    resolve(reader.result);
+                };
+                
+                reader.onerror = () => {
+                    reject(new Error('Failed to read file'));
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Add file preview function
+        function showFilePreview(file) {
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
+            
+            const icon = document.createElement('i');
+            icon.className = getFileIcon(file.type);
+            
+            const details = document.createElement('div');
+            details.innerHTML = `
+                <strong>${file.name}</strong>
+                <small>${formatFileSize(file.size)}</small>
+            `;
+            
+            preview.appendChild(icon);
+            preview.appendChild(details);
+            
+            const previewContainer = document.getElementById('filePreview');
+            if (previewContainer) {
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(preview);
+            }
+        }
+
+        // Add helper functions
+        function getFileIcon(mimeType) {
+            const icons = {
+                'application/pdf': 'fas fa-file-pdf',
+                'application/msword': 'fas fa-file-word',
+                'application/vnd.ms-excel': 'fas fa-file-excel',
+                'image/': 'fas fa-file-image',
+                'video/': 'fas fa-file-video',
+                'audio/': 'fas fa-file-audio',
+                'text/': 'fas fa-file-alt'
+            };
+
+            for (const [type, icon] of Object.entries(icons)) {
+                if (mimeType.startsWith(type)) return icon;
+            }
+            return 'fas fa-file';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Handle resource submission
+        async function handleResourceSubmit(event) {
+            event.preventDefault();
+            try {
+                const form = event.target;
+                const editId = form.dataset.editId;
+                const file = document.getElementById('resourceFile').files[0];
+                
+                const formData = {
+                    id: editId || Date.now().toString(),
+                    title: document.getElementById('resourceTitle').value,
+                    branch: document.getElementById('resourceBranch').value,
+                    type: document.getElementById('resourceType').value,
+                    chapter: document.getElementById('resourceChapter').value,
+                    lastUpdated: new Date().toISOString()
+                };
+
+                // Handle file if provided
+                if (file) {
+                    formData.file = await readFileAsDataURL(file);
+                    formData.fileName = file.name;
+                    formData.fileSize = file.size;
+                }
+
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                
+                if (editId) {
+                    // Update existing resource
+                    const index = resources.findIndex(r => r.id === editId);
+                    if (index !== -1) {
+                        formData.file = formData.file || resources[index].file; // Keep existing file if not changed
+                        resources[index] = { ...resources[index], ...formData };
+                    }
+                } else {
+                    // Add new resource
+                    resources.push(formData);
+                }
+
+                localStorage.setItem('resources', JSON.stringify(resources));
+                showNotification('Resource saved successfully!', 'success');
+                closeModal();
+                loadResources();
+            } catch (error) {
+                console.error('Error saving resource:', error);
+                showNotification('Error saving resource', 'error');
+            }
+        }
+
+        // File handling
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Resource actions
+        function viewResource(id) {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const resource = resources.find(r => r.id === id);
+            if (resource?.file) {
+                incrementDownloads(id);
+                window.open(resource.file, '_blank');
+            }
+        }
+
+        function deleteResource(id) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+                const updatedResources = resources.filter(r => r.id !== id);
+                localStorage.setItem('resources', JSON.stringify(updatedResources));
+                loadResources();
+            }
+        }
+
+        // Add these new functions to your script section
+        function editResource(id) {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const resource = resources.find(r => r.id === id);
+            
+            if (resource) {
+                document.getElementById('modalTitle').textContent = 'Edit Resource';
+                document.getElementById('resourceTitle').value = resource.title;
+                document.getElementById('resourceBranch').value = resource.branch;
+                document.getElementById('resourceType').value = resource.type;
+                document.getElementById('resourceChapter').value = resource.chapter;
+                
+                // Store the resource ID for updating
+                document.getElementById('resourceForm').dataset.editId = id;
+                document.getElementById('resourceModal').style.display = 'block';
+                
+                // Make file optional when editing
+                document.getElementById('resourceFile').required = false;
+            }
+        }
+
+        // Add notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Add filter functionality
+        function filterResources() {
+            const branch = document.getElementById('branchFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const chapter = document.getElementById('chapterFilter').value;
+            
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const filtered = resources.filter(resource => 
+                (branch === 'all' || resource.branch === branch) &&
+                (type === 'all' || resource.type === type) &&
+                (chapter === 'all' || resource.chapter === chapter)
+            );
+            
+            displayResources(filtered);
+        }
+
+        function displayResources(resources) {
+            const tableBody = document.getElementById('resourcesTableBody');
+            if (!tableBody) return;
+            
+            const settings = JSON.parse(localStorage.getItem('resourceSettings'));
+            
+            tableBody.innerHTML = resources.map(resource => `
+                <tr>
+                    <td>${resource.title}</td>
+                    <td>${getBranchName(resource.branch, settings)}</td>
+                    <td>${getTypeName(resource.type, settings)}</td>
+                    <td>${getChapterName(resource.chapter, settings)}</td>
+                    <td>${resource.downloads || 0}</td>
+                    <td>
+                        <button class="action-btn download-btn" onclick="downloadResource('${resource.id}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getBranchName(branchId, settings) {
+            const branch = settings.branches.find(b => b.id === branchId);
+            return branch ? branch.name : branchId;
+        }
+
+        function getTypeName(typeId, settings) {
+            const type = settings.types.find(t => t.id === typeId);
+            return type ? type.name : typeId;
+        }
+
+        function getChapterName(chapterId, settings) {
+            const chapter = settings.chapters.find(c => c.id === chapterId);
+            return chapter ? chapter.name : chapterId;
+        }
+
+        // Add close modal function
+        function closeModal() {
+            const modal = document.getElementById('resourceModal');
+            modal.style.display = 'none';
+            document.getElementById('resourceForm').reset();
+            delete document.getElementById('resourceForm').dataset.editId;
+            document.getElementById('resourceFile').required = true;
+        }
+
+        // Add this to your existing script section
+        function updateStats() {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const uniqueBranches = new Set(resources.map(r => r.branch));
+            const uniqueTypes = new Set(resources.map(r => r.type));
+
+            document.getElementById('totalResources').textContent = resources.length;
+            document.getElementById('totalBranches').textContent = uniqueBranches.size;
+            document.getElementById('totalTypes').textContent = uniqueTypes.size;
+        }
+
+        // Add download tracking function
+        function incrementDownloads(id) {
+            const resources = JSON.parse(localStorage.getItem('resources') || '[]');
+            const index = resources.findIndex(r => r.id === id);
+            
+            if (index !== -1) {
+                resources[index].downloads = (resources[index].downloads || 0) + 1;
+                localStorage.setItem('resources', JSON.stringify(resources));
+                loadResources(); // Refresh the table
+            }
+        }
+
+        // Add these functions to your existing script section
+        function loadResourceSettings() {
+            const settings = JSON.parse(localStorage.getItem('resourceSettings') || '{}');
+            
+            // Default options if no settings exist
+            const defaultSettings = {
+                branches: BRANCHES.map(b => ({ value: b.id, name: b.name })),
+                types: RESOURCE_TYPES.map(t => ({ value: t.id, name: t.name })),
+                chapters: CHAPTERS.map(c => ({ value: c.id, name: c.name }))
+            };
+
+            // Use settings or defaults
+            const finalSettings = {
+                branches: settings.branches || defaultSettings.branches,
+                types: settings.types || defaultSettings.types,
+                chapters: settings.chapters || defaultSettings.chapters
+            };
+
+            // Update branch options
+            const branchFilter = document.getElementById('branchFilter');
+            const resourceBranch = document.getElementById('resourceBranch');
+            
+            const branchOptions = finalSettings.branches.map(branch => 
+                `<option value="${branch.value}">${branch.name}</option>`
+            ).join('');
+            
+            if (branchFilter) {
+                branchFilter.innerHTML = `<option value="all">All Branches</option>${branchOptions}`;
+            }
+            if (resourceBranch) {
+                resourceBranch.innerHTML = `<option value="">Select Branch</option>${branchOptions}`;
+            }
+
+            // Update type options
+            const typeFilter = document.getElementById('typeFilter');
+            const resourceType = document.getElementById('resourceType');
+            
+            const typeOptions = finalSettings.types.map(type => 
+                `<option value="${type.value}">${type.name}</option>`
+            ).join('');
+            
+            if (typeFilter) {
+                typeFilter.innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+            }
+            if (resourceType) {
+                resourceType.innerHTML = `<option value="">Select Type</option>${typeOptions}`;
+            }
+
+            // Update chapter options
+            const chapterFilter = document.getElementById('chapterFilter');
+            const resourceChapter = document.getElementById('resourceChapter');
+            
+            const chapterOptions = finalSettings.chapters.map(chapter => 
+                `<option value="${chapter.value}">${chapter.name}</option>`
+            ).join('');
+            
+            if (chapterFilter) {
+                chapterFilter.innerHTML = `<option value="all">All Chapters</option>${chapterOptions}`;
+            }
+            if (resourceChapter) {
+                resourceChapter.innerHTML = `<option value="">Select Chapter</option>${chapterOptions}`;
+            }
+
+            // Store the settings if they don't exist
+            if (!localStorage.getItem('resourceSettings')) {
+                localStorage.setItem('resourceSettings', JSON.stringify(defaultSettings));
+            }
+        }
+
+        // Add these helper functions
+        function checkSettings() {
+            const settings = localStorage.getItem('resourceSettings');
+            console.log('Current settings:', settings ? JSON.parse(settings) : 'No settings found');
+        }
+
+        function resetSettings() {
+            localStorage.removeItem('resourceSettings');
+            loadResourceSettings();
+            console.log('Settings reset to defaults');
+        }
+
+        // Add initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            loadResourceSettings();
+            
+            // Add filter change listeners
+            ['branchFilter', 'typeFilter', 'chapterFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', filterResources);
+                }
+            });
+            
+            // Listen for settings changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'resourceSettings') {
+                    loadResourceSettings();
+                    filterResources(); // Refresh the display
+                }
+            });
+        });
+
+        // Add event listener for settings updates
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'settingsUpdate') {
+                // Reload resources with new settings
+                loadResources();
+            }
+        });
+
+        // Add this to your script section
+        function openSettings() {
+            // Open settings in the same window
+            window.location.href = 'resource_setting.html';
+            
+            // Or if you prefer to open in a new window/tab:
+            // window.open('resource_setting.html', '_blank');
+        }
+    </script>
+</body>
+</html>
